@@ -66,9 +66,9 @@
 
   <!-- 상단 헤더 & 컨트롤 바 -->
   <header class="w-full max-w-4xl flex flex-col md:flex-row items-center justify-between gap-4 z-10 mt-2">
-    <!-- 타이틀 (이모지와 부제목 제거로 가독성 향상 및 진노랑색으로 변경) -->
+    <!-- 타이틀 (이모지와 부제목 제거로 가독성 향상) -->
     <div class="text-center md:text-left">
-      <h1 class="text-4xl md:text-5xl text-amber-500 drop-shadow-[0_2px_0_rgba(0,0,0,1)] tracking-wide">
+      <h1 class="text-4xl md:text-5xl text-amber-600 drop-shadow-[0_2px_0_rgba(0,0,0,1)] text-white tracking-wide">
         오늘의 도전반찬!
       </h1>
     </div>
@@ -345,7 +345,7 @@
         selectedResults.push(sideDishes[randIdx]);
       }
 
-      // 변경된 시간차 정지 로직 (1개: 1.5초 / 2개: 1초, 2초 / 3개: 1초, 2초, 3초)
+      // 지정된 시간차 정지 로직 (1개일 때 1.5초, 2개일 때 1/2초, 3개일 때 1/2/3초)
       let stopTimes = [];
       if (currentSlotCount === 1) {
         stopTimes = [1500];
