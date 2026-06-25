@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>오늘의 도전반찬! 슬롯머신</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: 동글동글 친근한 주아 폰트 적용 -->
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Jua', sans-serif;
+      background: radial-gradient(circle, #fffae6 0%, #ffe9a6 100%);
+      overflow-x: hidden;
+    }
+    
+    /* 슬롯 머신 실루엣 디자인 (이전보다 더 웅장하게 확대) */
+    .slot-machine-body {
+      border: 6px solid #000;
+      box-shadow: 0 20px 0px #0000001a, inset 12px 12px 0px #fff3cc;
+    }
+    
+    .border-black-6 {
+      border: 6px solid #000;
+    }
+
+    .border-black-4 {
+      border: 4px solid #000;
+    }
+
+    /* 슬롯 내부 롤링 애니메이션 */
+    @keyframes slot-spin {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-80%); } /* 5개 세트 반복 회전 */
+    }
+
+    .spinning {
+      animation: slot-spin 0.15s linear infinite;
+    }
+
+    /* 레버 애니메이션 */
+    .lever-arm {
+      transform-origin: bottom center;
+      transition: transform 0.15s ease-in-out;
+    }
+    .lever-pulled {
+      transform: rotate(45deg) translateY(20px);
+    }
+
+    /* 구름 둥실둥실 효과 */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(1deg); }
+    }
+    .floating-cloud {
+      animation: float 6s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 selection:bg-yellow-200">
+
+  <!-- 배경 장식 구름 -->
+  <div class="absolute top-10 left-10 w-32 h-20 bg-white opacity-60 rounded-full blur-sm floating-cloud pointer-events-none hidden md:block"></div>
+  <div class="absolute top-24 right-12 w-40 h-24 bg-white opacity-50 rounded-full blur-sm floating-cloud pointer-events-none hidden md:block" style="animation-delay: -3s;"></div>
+
+  <!-- 상단 헤더 & 컨트롤 바 -->
+  <header class="w-full max-w-4xl flex flex-col md:flex-row items-center justify-between gap-4 z-10 mt-2">
+    <!-- 타이틀 (이모지와 부제목 제거로 가독성 향상 및 진노랑색으로 변경) -->
+    <div class="text-center md:text-left">
+      <h1 class="text-4xl md:text-5xl text-amber-500 drop-shadow-[0_2px_0_rgba(0,0,0,1)] tracking-wide">
+        오늘의 도전반찬!
+      </h1>
+    </div>
+
+    <!-- 슬롯 개수 선택 버튼 -->
+    <div class="bg-amber-100 border-black-4 rounded-3xl p-2 flex gap-2 shadow-md">
+      <button onclick="changeSlotCount(1)" id="btn-slot-1" class="slot-count-btn px-6 py-2 rounded-2xl text-xl border-black-4 transition-all duration-150 transform hover:scale-105 active:scale-95 bg-yellow-400 text-black font-bold shadow-[0_4px_0_#000]">
+        1개
+      </button>
+      <button onclick="changeSlotCount(2)" id="btn-slot-2" class="slot-count-btn px-6 py-2 rounded-2xl text-xl border-black-4 transition-all duration-150 transform hover:scale-105 active:scale-95 bg-white text-gray-700 shadow-[0_4px_0_#000]">
+        2개
+      </button>
+      <button onclick="changeSlotCount(3)" id="btn-slot-3" class="slot-count-btn px-6 py-2 rounded-2xl text-xl border-black-4 transition-all duration-150 transform hover:scale-105 active:scale-95 bg-white text-gray-700 shadow-[0_4px_0_#000]">
+        3개
+      </button>
+    </div>
+  </header>
+
+  <!-- 메인 게임 영역 (슬롯머신 - 전체 크기 및 이미지 사이즈 대폭 확대) -->
+  <main class="relative w-full max-w-xl md:max-w-2xl flex items-center justify-center my-6 z-10">
+    
+    <!-- 슬롯머신 전체 컨테이너 -->
+    <div class="relative flex items-center">
+      
+      <!-- 슬롯머신 본체 (폭을 대폭 넓히고 높이감 제공) -->
+      <div class="slot-machine-body w-[340px] xs:w-[400px] sm:w-[500px] md:w-[580px] bg-[#fec006] rounded-[40px] flex flex-col items-center p-6 relative">
+        
+        <!-- 보라색 내부 화면 프레임 (슬롯 높이를 더 확보하기 위해 내부 패딩 및 최소 높이 증가) -->
+        <div class="w-full bg-[#b09ed6] border-black-6 rounded-[24px] p-5 mb-5 flex items-center justify-center min-h-[220px] xs:min-h-[270px] md:min-h-[310px]">
+          
+          <!-- 슬롯들이 놓이는 가로 영역 -->
+          <div id="slots-container" class="w-full flex justify-center gap-4">
+            <!-- 자바스크립트로 동적 생성됩니다 -->
+          </div>
+
+        </div>
+
+        <!-- 하단 오늘의 도전반찬! 안내 보라 배너 -->
+        <div class="w-[85%] bg-[#8271b0] border-black-6 rounded-[18px] py-3 text-center shadow-[0_6px_0_#000]">
+          <span class="text-2xl md:text-3xl text-black font-black tracking-wider">
+            오늘의 도전반찬!
+          </span>
+        </div>
+
+        <!-- 머신 밑받침 거치대 -->
+        <div class="absolute -bottom-6 w-[88%] h-6 bg-[#f5b300] border-l-6 border-r-6 border-b-6 border-black rounded-b-[12px] -z-10"></div>
+      </div>
+
+      <!-- 오른쪽 작동 레버 (크기를 기계에 맞춰 비례 상승) -->
+      <div class="absolute left-full -ml-3 flex items-center h-full">
+        <!-- 레버 지지대 뭉치 -->
+        <div class="relative w-12 h-16 bg-gray-400 border-black-4 rounded-r-xl flex items-center shadow-[2px_4px_0_rgba(0,0,0,0.15)] z-20">
+          <div class="w-3 h-full bg-gray-600 rounded-r-lg ml-auto"></div>
+          
+          <!-- 레버 샤프트 및 손잡이 빨간 볼 -->
+          <div id="lever-interactive" class="absolute left-3 bottom-6 w-5 h-32 lever-arm cursor-pointer group" onclick="startSpin()">
+            <!-- 쇠막대기 샤프트 -->
+            <div class="w-3 h-24 bg-gray-300 border-black-4 rounded-t-full mx-auto shadow-inner transition-colors group-hover:bg-gray-100"></div>
+            <!-- 빨간 동그라미 손잡이 -->
+            <div class="absolute -top-7 -left-3 w-11 h-11 bg-red-600 border-black-4 rounded-full shadow-[inset_-3px_-3px_0_rgba(0,0,0,0.2),inset_3px_3px_0_rgba(255,255,255,0.4)] transition-transform group-hover:scale-110 active:scale-95"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 하단 결과 알림 메시지 보드 및 상장 (불필요한 글귀 삭제 완료) -->
+  <footer class="w-full max-w-xl z-10 mb-2">
+    <div id="result-board" class="bg-white border-black-4 rounded-2xl p-5 text-center shadow-[0_6px_0_#000] opacity-0 transform translate-y-4 transition-all duration-500">
+      <!-- 당첨 결과 반찬 텍스트만 왕따시만하게 부각 -->
+      <div id="result-text" class="text-3xl md:text-5xl text-rose-500 font-extrabold my-2 drop-shadow-sm"></div>
+      
+      <!-- 참 잘했어요 도장 버튼 -->
+      <button onclick="stampSuccess()" class="mt-3 bg-emerald-400 hover:bg-emerald-500 text-black border-black-4 px-8 py-3 rounded-2xl text-xl font-bold shadow-[0_4px_0_#000] active:translate-y-1 active:shadow-none transition-all">
+        👍 도전에 성공했어요! (참 잘했어요!)
+      </button>
+    </div>
+  </footer>
+
+  <!-- 성공 축하 오버레이 모달 (문구 수정 및 메달->엄지척 변경 완료) -->
+  <div id="success-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden transition-all duration-300">
+    <div class="bg-yellow-100 border-black-6 rounded-[32px] p-8 max-w-sm text-center mx-4 shadow-[0_12px_0_#000] transform scale-90 transition-transform duration-300" id="modal-content">
+      <span class="text-6xl block mb-4 animate-bounce">✨🏆✨</span>
+      <!-- '히어로' 텍스트를 제거하고 깔끔하게 '도전 성공!' -->
+      <h2 class="text-4xl text-rose-500 font-black mb-3">도전 성공!</h2>
+      <!-- 요청하신 신규 내용으로 수정 -->
+      <p class="text-gray-800 text-xl font-bold leading-relaxed">
+        오늘의 도전 반찬을 먹은 당신! 최~고!
+      </p>
+      <div class="my-5 flex justify-center">
+        <!-- 둥근 배경에 엄지척(👍) 이모지로 변경 및 크기 극대화 -->
+        <div class="w-24 h-24 bg-amber-400 rounded-full border-black-4 flex items-center justify-center text-5xl shadow-lg animate-pulse">
+          👍
+        </div>
+      </div>
+      <button onclick="closeModal()" class="bg-rose-400 hover:bg-rose-500 text-black border-black-4 px-8 py-3 rounded-2xl text-xl font-bold shadow-[0_4px_0_#000] active:translate-y-1 active:shadow-none transition-all">
+        닫기
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Web Audio API를 활용한 귀여운 효과음 연주기
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq, duration, type = 'sine') {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.type = type;
+        osc.frequency.value = freq;
+        gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        // 브라우저 차단 우회 예외 처리
+      }
+    }
+
+    function playLeverSound() {
+      playTone(150, 0.1, 'sawtooth');
+      setTimeout(() => playTone(300, 0.15, 'triangle'), 50);
+    }
+
+    function playTickSound() {
+      playTone(600, 0.05, 'sine');
+    }
+
+    function playStopSound() {
+      playTone(800, 0.15, 'triangle');
+    }
+
+    function playFanfare() {
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        setTimeout(() => {
+          playTone(freq, 0.3, 'sine');
+        }, idx * 120);
+      });
+    }
+
+    function playStampSound() {
+      playTone(400, 0.1, 'triangle');
+      setTimeout(() => playTone(600, 0.1, 'triangle'), 80);
+      setTimeout(() => playTone(900, 0.3, 'sine'), 160);
+    }
+
+    // 5가지 반찬 정보 정의 (이미지 로드용)
+    const sideDishes = [
+      { id: 'gogi', name: '고기반찬', file: 'images/gogi.jpg', emoji: '🍖', color: '#FFF0F0' },
+      { id: 'kc', name: '김치', file: 'images/kc.jpg', emoji: '🥬', color: '#FFF5EB' },
+      { id: 'nm', name: '나물반찬', file: 'images/nm.jpg', emoji: '🌿', color: '#EDFBEF' },
+      { id: 'soup', name: '된장국', file: 'images/soup.jpg', emoji: '🍲', color: '#FCF9E6' },
+      { id: 'bob', name: '밥', file: 'images/bob.jpg', emoji: '🍚', color: '#F0F7FF' }
+    ];
+
+    let currentSlotCount = 3;
+    let isSpinning = false;
+    let spinTimers = [];
+
+    window.onload = function() {
+      changeSlotCount(3);
+    };
+
+    // 슬롯 1/2/3 전환 함수
+    function changeSlotCount(count) {
+      if (isSpinning) return;
+
+      currentSlotCount = count;
+      
+      // 버튼 하이라이트 변경
+      document.querySelectorAll('.slot-count-btn').forEach(btn => {
+        btn.classList.remove('bg-yellow-400', 'text-black', 'font-bold');
+        btn.classList.add('bg-white', 'text-gray-700');
+      });
+      const activeBtn = document.getElementById(`btn-slot-${count}`);
+      activeBtn.classList.remove('bg-white', 'text-gray-700');
+      activeBtn.classList.add('bg-yellow-400', 'text-black', 'font-bold');
+
+      // 결과 영역 초기화
+      const resultBoard = document.getElementById('result-board');
+      resultBoard.classList.add('opacity-0', 'translate-y-4');
+
+      const container = document.getElementById('slots-container');
+      container.innerHTML = '';
+
+      for (let i = 0; i < count; i++) {
+        // 개별 슬롯 상자 생성 (크기 대폭 확대: w-24 h-36 -> 데스크탑 기준 w-36 h-48로 이미지 최대 시인성 확보)
+        const slotEl = document.createElement('div');
+        slotEl.className = 'w-24 h-36 xs:w-32 xs:h-44 md:w-36 md:h-48 bg-white border-black-4 rounded-xl overflow-hidden relative shadow-[inset_0_4px_6px_rgba(0,0,0,0.2)] flex items-center justify-center';
+        slotEl.id = `slot-window-${i}`;
+
+        // 스크롤 릴
+        const reelEl = document.createElement('div');
+        reelEl.className = 'absolute w-full flex flex-col justify-start transition-all duration-300';
+        reelEl.id = `slot-reel-${i}`;
+        
+        // 롤링 콘텐츠 채우기
+        const totalCycles = 5;
+        let reelContent = '';
+        for (let c = 0; c < totalCycles; c++) {
+          sideDishes.forEach(dish => {
+            reelContent += `
+              <div class="h-36 xs:h-44 md:h-48 w-full flex flex-col items-center justify-center p-2 flex-shrink-0" style="background-color: ${dish.color}">
+                <!-- 이미지 파일 로드 시도, 실패 시 귀여운 이모지 카드로 대응 -->
+                <div class="relative w-[85%] h-[75%] flex items-center justify-center rounded-lg overflow-hidden bg-white/80 border border-gray-100">
+                  <img src="${dish.file}" alt="${dish.name}" class="w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                  <div class="hidden flex-col items-center justify-center text-5xl select-none">
+                    <span>${dish.emoji}</span>
+                  </div>
+                </div>
+                <span class="text-sm xs:text-base md:text-lg font-bold text-gray-800 mt-1 select-none">${dish.name}</span>
+              </div>
+            `;
+          });
+        }
+        reelEl.innerHTML = reelContent;
+        slotEl.appendChild(reelEl);
+        container.appendChild(slotEl);
+
+        // 최초 멈춘 기본 상태로 밥(index 4) 배치
+        alignReelToItem(i, 4);
+      }
+    }
+
+    // 슬롯 릴을 대상 아이템 위치로 정렬하는 보조 함수
+    function alignReelToItem(slotIdx, itemIdx) {
+      const reel = document.getElementById(`slot-reel-${slotIdx}`);
+      if (!reel) return;
+      const slotWindow = document.getElementById(`slot-window-${slotIdx}`);
+      const height = slotWindow.clientHeight;
+      reel.style.transform = `translateY(-${itemIdx * height}px)`;
+    }
+
+    // 슬롯 회전 구동
+    function startSpin() {
+      if (isSpinning) return;
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      isSpinning = true;
+      playLeverSound();
+
+      // 레버 모션
+      const lever = document.getElementById('lever-interactive');
+      lever.classList.add('lever-pulled');
+      
+      const resultBoard = document.getElementById('result-board');
+      resultBoard.classList.add('opacity-0', 'translate-y-4');
+
+      setTimeout(() => {
+        lever.classList.remove('lever-pulled');
+      }, 300);
+
+      // 주기적 비프음 발생
+      let tickInterval = setInterval(() => {
+        if (isSpinning) playTickSound();
+      }, 150);
+
+      const selectedResults = [];
+      for (let i = 0; i < currentSlotCount; i++) {
+        const reel = document.getElementById(`slot-reel-${i}`);
+        reel.classList.add('spinning');
+        
+        // 당첨 반찬 난수 결정
+        const randIdx = Math.floor(Math.random() * sideDishes.length);
+        selectedResults.push(sideDishes[randIdx]);
+      }
+
+      // 변경된 시간차 정지 로직 (1개: 2초 / 2개: 1.5초, 3초 / 3개: 1초, 2초, 3초)
+      let stopTimes = [];
+      if (currentSlotCount === 1) {
+        stopTimes = [2000];
+      } else if (currentSlotCount === 2) {
+        stopTimes = [1500, 3000];
+      } else {
+        stopTimes = [1000, 2000, 3000];
+      }
+
+      spinTimers = [];
+      stopTimes.forEach((time, index) => {
+        const timer = setTimeout(() => {
+          stopSlot(index, selectedResults[index]);
+          
+          if (index === currentSlotCount - 1) {
+            clearInterval(tickInterval);
+            finishSpin(selectedResults);
+          }
+        }, time);
+        spinTimers.push(timer);
+      });
+    }
+
+    function stopSlot(slotIdx, targetDish) {
+      const reel = document.getElementById(`slot-reel-${slotIdx}`);
+      if (!reel) return;
+      
+      reel.classList.remove('spinning');
+      playStopSound();
+
+      const targetIdx = sideDishes.findIndex(dish => dish.id === targetDish.id);
+      alignReelToItem(slotIdx, targetIdx);
+    }
+
+    // 스핀 완료 및 결과 표시
+    function finishSpin(results) {
+      isSpinning = false;
+      playFanfare();
+
+      const resultTextEl = document.getElementById('result-text');
+      const uniqueNames = results.map(r => r.name);
+      const dishSet = [...new Set(uniqueNames)];
+      
+      let phrase = '';
+      if (dishSet.length === 1) {
+        phrase = `🎉 모두 [${dishSet[0]}] 당첨! 🎉`;
+      } else {
+        phrase = dishSet.map(name => `[${name}]`).join(' + ');
+      }
+
+      resultTextEl.textContent = phrase;
+
+      const resultBoard = document.getElementById('result-board');
+      resultBoard.classList.remove('opacity-0', 'translate-y-4');
+    }
+
+    // 참 잘했어요 성공 도장 클릭 시 모달 오픈
+    function stampSuccess() {
+      playStampSound();
+      
+      const modal = document.getElementById('success-modal');
+      const content = document.getElementById('modal-content');
+      
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        content.classList.remove('scale-90');
+        content.classList.add('scale-100');
+      }, 50);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('success-modal');
+      const content = document.getElementById('modal-content');
+      
+      content.classList.remove('scale-100');
+      content.classList.add('scale-90');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 150);
+    }
+  </script>
+</body>
+</html>
