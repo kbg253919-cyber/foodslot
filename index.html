@@ -345,12 +345,12 @@
         selectedResults.push(sideDishes[randIdx]);
       }
 
-      // 변경된 시간차 정지 로직 (1개: 2초 / 2개: 1.5초, 3초 / 3개: 1초, 2초, 3초)
+      // 변경된 시간차 정지 로직 (1개: 1.5초 / 2개: 1초, 2초 / 3개: 1초, 2초, 3초)
       let stopTimes = [];
       if (currentSlotCount === 1) {
-        stopTimes = [2000];
+        stopTimes = [1500];
       } else if (currentSlotCount === 2) {
-        stopTimes = [1500, 3000];
+        stopTimes = [1000, 2000];
       } else {
         stopTimes = [1000, 2000, 3000];
       }
@@ -391,7 +391,7 @@
       
       let phrase = '';
       if (dishSet.length === 1) {
-        phrase = `🎉 모두 [${dishSet[0]}] 당첨! 🎉`;
+        phrase = `🎉 [${dishSet[0]}] 당첨! 🎉`;
       } else {
         phrase = dishSet.map(name => `[${name}]`).join(' + ');
       }
